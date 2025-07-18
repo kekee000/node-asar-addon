@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+out/
+lib/
+prebuilds/
+.DS_Store
+tsconfig.tsbuildinfo
+/node_modules.asar
+/node_modules.json

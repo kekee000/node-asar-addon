@@ -1,0 +1,24 @@
+{
+  "name": "node-asar-addon",
+  "version": "0.0.0",
+  "description": "electron asar Node.js Addons",
+  "main": "addon.js",
+  "private": true,
+  "gypfile": true,
+  "scripts": {
+    "build:debug": "prebuildify --target $(node -v | sed 's/^v//') --debug",
+    "build": "prebuildify --target $(node -v | sed 's/^v//') --strip",
+    "build:ts": "rm -rf lib && tsc",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "node-addon-api": "^4.3.0",
+    "node-gyp-build": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.8",
+    "asar-node": "^3.1.1",
+    "prebuildify": "^6.0.1",
+    "typescript": "^5.3.3"
+  }
+}
