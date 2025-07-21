@@ -65,7 +65,7 @@ private:
         Napi::Env env = info.Env();
 
         if (info.Length() < 1 || !info[0].IsString()) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         std::string path_str = info[0].As<Napi::String>();
@@ -73,7 +73,7 @@ private:
 
         asar::Archive::FileInfo file_info;
         if (!archive_ || !archive_->GetFileInfo(path, &file_info)) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         Napi::Object result = Napi::Object::New(env);
@@ -105,7 +105,7 @@ private:
         Napi::Env env = info.Env();
 
         if (info.Length() < 1 || !info[0].IsString()) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         std::string path_str = info[0].As<Napi::String>();
@@ -113,7 +113,7 @@ private:
 
         asar::Archive::Stats stats;
         if (!archive_ || !archive_->Stat(path, &stats)) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         Napi::Object result = Napi::Object::New(env);
@@ -128,7 +128,7 @@ private:
         Napi::Env env = info.Env();
 
         if (info.Length() < 1 || !info[0].IsString()) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         std::string path_str = info[0].As<Napi::String>();
@@ -136,7 +136,7 @@ private:
 
         std::vector<fs::path> files;
         if (!archive_ || !archive_->Readdir(path, &files)) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         Napi::Array result = Napi::Array::New(env, files.size());
@@ -151,7 +151,7 @@ private:
         Napi::Env env = info.Env();
 
         if (info.Length() < 1 || !info[0].IsString()) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         std::string path_str = info[0].As<Napi::String>();
@@ -159,7 +159,7 @@ private:
 
         fs::path realpath;
         if (!archive_ || !archive_->Realpath(path, &realpath)) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         return Napi::String::New(env, realpath.string());
@@ -169,7 +169,7 @@ private:
         Napi::Env env = info.Env();
 
         if (info.Length() < 1 || !info[0].IsString()) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         std::string path_str = info[0].As<Napi::String>();
@@ -177,7 +177,7 @@ private:
 
         fs::path new_path;
         if (!archive_ || !archive_->CopyFileOut(path, &new_path)) {
-            return env.Null();
+            return Napi::Boolean::New(env, false);
         }
 
         return Napi::String::New(env, new_path.string());
@@ -201,7 +201,7 @@ Napi::Value SplitPath(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
     if (info.Length() < 1 || !info[0].IsString()) {
-        return env.Null();
+        return Napi::Boolean::New(env, false);
     }
 
     std::string path_str = info[0].As<Napi::String>();

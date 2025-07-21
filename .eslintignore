@@ -1,0 +1,11 @@
+/lib
+/dist
+/shell
+/build
+/node_modules
+/.cache
+/.next
+/.nuxt
+/.vercel
+/.output
+/.vscode

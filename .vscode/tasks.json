@@ -3,11 +3,17 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "debug",
-			"group": "rebuild",
+			"script": "build:debug",
+			"group": "build",
 			"problemMatcher": [],
-			"label": "npm: debug",
-			"detail": "prebuildify --target $(node -v | sed 's/^v//') --debug"
+			"label": "npm: build:debug"
+		},
+		{
+			"type": "npm",
+			"script": "build:ts",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build:ts"
 		}
 	]
 }

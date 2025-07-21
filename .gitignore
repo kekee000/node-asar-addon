@@ -8,3 +8,4 @@ prebuilds/
 tsconfig.tsbuildinfo
 /node_modules.asar
 /node_modules.json
+package-lock.json

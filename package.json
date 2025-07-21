@@ -1,23 +1,37 @@
 {
   "name": "node-asar-addon",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "electron asar Node.js Addons",
-  "main": "addon.js",
-  "private": true,
-  "gypfile": true,
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "files": [
+    "lib",
+    "prebuilds",
+    "!lib/**/*.map"
+  ],
   "scripts": {
+    "install": "node-gyp-build",
+    "build": "npm run build:addon && npm run build:ts",
     "build:debug": "prebuildify --target $(node -v | sed 's/^v//') --debug",
-    "build": "prebuildify --target $(node -v | sed 's/^v//') --strip",
+    "build:addon": "prebuildify --target $(node -v | sed 's/^v//') --strip",
     "build:ts": "rm -rf lib && tsc",
-    "test": "node test.js"
+    "build:test": "[ ! -f node_modules.asar ] && asar pack node_modules node_modules.asar",
+    "test": "node test/require.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "node-addon-api": "^4.3.0",
     "node-gyp-build": "^4.8.1"
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin": "^3.1.0",
     "@types/node": "^20.19.8",
-    "asar-node": "^3.1.1",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.32.0",
     "prebuildify": "^6.0.1",
     "typescript": "^5.3.3"
   }

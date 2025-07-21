@@ -8,12 +8,20 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug",
-            "preLaunchTask": "npm: debug",
+            "preLaunchTask": "npm: build:debug",
             "program": "/Users/work/.nvm/versions/node/v20.11.1/bin/node",
             "args": [
                 "${workspaceFolder}/test/example.js",
             ],
             "cwd": "${workspaceFolder}"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug with Node",
+            "preLaunchTask": "npm: build:ts",
+            "program": "${workspaceFolder}/test/require.js",
+            "cwd": "${workspaceFolder}",
+        }
     ]
 }

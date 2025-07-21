@@ -84,57 +84,6 @@ bool ScopedTemporaryFile::Init(const std::filesystem::path::string_type& ext) {
   return true;
 }
 
-bool ScopedTemporaryFile::InitFromFile(
-    std::ifstream* src,
-    const std::filesystem::path::string_type& ext,
-    uint64_t offset,
-    uint64_t size,
-    const std::optional<IntegrityPayload>& integrity) {
-
-  if (!src || !src->is_open()) {
-    return false;
-  }
-
-  if (!Init(ext)) {
-    return false;
-  }
-
-  // Read data from source file
-  std::vector<uint8_t> buf(size);
-
-  // Seek to offset
-  src->seekg(offset);
-  if (src->fail()) {
-    return false;
-  }
-
-  // Read data
-  src->read(reinterpret_cast<char*>(buf.data()), size);
-  if (src->fail() || static_cast<uint64_t>(src->gcount()) != size) {
-    return false;
-  }
-
-  // Validate integrity if provided
-  if (integrity) {
-    std::string_view sv(reinterpret_cast<const char*>(buf.data()), size);
-    ValidateIntegrityOrDie(sv, *integrity);
-  }
-
-  // Write to destination file
-  std::ofstream dest(path_, std::ios::binary);
-  if (!dest.is_open()) {
-    return false;
-  }
-
-  dest.write(reinterpret_cast<const char*>(buf.data()), size);
-  if (dest.fail()) {
-    return false;
-  }
-
-  dest.close();
-  return !dest.fail();
-}
-
 // Alternative implementation using file descriptor/handle for better compatibility
 bool ScopedTemporaryFile::InitFromFile(
     int src_fd,

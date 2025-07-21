@@ -27,13 +27,6 @@ class ScopedTemporaryFile {
 
   // Init an temporary file and fill it with content of |path|.
   bool InitFromFile(
-      std::ifstream* src,
-      const std::filesystem::path::string_type& ext,
-      uint64_t offset,
-      uint64_t size,
-      const std::optional<IntegrityPayload>& integrity);
-
-  bool InitFromFile(
       int srcfd,
       const std::filesystem::path::string_type& ext,
       uint64_t offset,
