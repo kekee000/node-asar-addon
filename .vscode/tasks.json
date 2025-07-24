@@ -10,10 +10,10 @@
 		},
 		{
 			"type": "npm",
-			"script": "build:ts",
+			"script": "build:ts-debug",
 			"group": "build",
 			"problemMatcher": [],
-			"label": "npm: build:ts"
+			"label": "npm: build:ts-debug"
 		}
 	]
 }

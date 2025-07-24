@@ -1,19 +1,17 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Initialize ASAR support in fs module.
-import archives, {isAsarDisabled} from './archives';
-import path from 'path';
+import {archives} from './archives';
 import { wrapFsWithAsar } from './asar-fs-wrapper';
-import {wrapModuleWithAsar} from './asar-module-wrapper';
 import type { ForkOptions } from 'child_process';
+import { wrapModuleAsarMapping } from './asar-module-mapping';
+import type { RegisterOptions } from '../index';
 
-export function register(options: { archives: string[] }) {
-  archives.loadArchives(options.archives);
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+export function register(options: RegisterOptions) {
+  archives.loadArchives(options);
   const fs = wrapFsWithAsar(require('fs'));
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  wrapModuleWithAsar(require('module') as NodeJS.ModuleInternal, fs as typeof import('fs'));
+  wrapModuleAsarMapping(require('module') as NodeJS.ModuleInternal, fs as typeof import('fs'));
 
   // Hook child_process.fork.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const cp = require('child_process') as typeof import('child_process');
   const originalFork = cp.fork;
   cp.fork = (modulePath, args?, options?: ForkOptions) => {
@@ -40,31 +38,5 @@ export function register(options: { archives: string[] }) {
     }
     return originalFork(modulePath, args, options);
   };
-}
-
-
-export function addAsarToLookupPaths() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const Module = require('module') as NodeJS.ModuleInternal;
-
-  if (Module && typeof Module._resolveLookupPaths === 'function') {
-    const resolvePaths = function resolvePaths (paths: string[]) {
-      if (isAsarDisabled()) return paths;
-      for (let i = 0; i < paths.length; i++) {
-        if (path.basename(paths[i]) === 'node_modules' && archives.isLookup(paths[i])) {
-          paths.splice(i + 1, 0, paths[i] + '.asar');
-          i++;
-        }
-      }
-      return paths;
-    };
-    const oldResolveLookupPaths = Module._resolveLookupPaths;
-    Module._resolveLookupPaths = function (this: typeof Module, request, parent) {
-      const result = oldResolveLookupPaths.call(this, request, parent);
-      if (!result) return result;
-      return resolvePaths(result);
-    };
-  }
-
 }
 

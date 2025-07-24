@@ -1,5 +1,5 @@
 {
-  "name": "node-asar-addon",
+  "name": "@baidu/node-asar-addon",
   "version": "0.0.1",
   "description": "electron asar Node.js Addons",
   "main": "lib/index.js",
@@ -10,12 +10,14 @@
     "!lib/**/*.map"
   ],
   "scripts": {
-    "install": "node-gyp-build",
+    "install": "echo prebuilds",
     "build": "npm run build:addon && npm run build:ts",
     "build:debug": "prebuildify --target $(node -v | sed 's/^v//') --debug",
     "build:addon": "prebuildify --target $(node -v | sed 's/^v//') --strip",
     "build:ts": "rm -rf lib && tsc",
-    "build:test": "[ ! -f node_modules.asar ] && asar pack node_modules node_modules.asar",
+    "build:ts-debug": "rm -rf lib && tsc --sourceMap",
+    "build:test": "sh test/build-asar.sh",
+    "lint": "eslint ./src --ext .js,.ts",
     "test": "node test/require.js"
   },
   "engines": {
@@ -33,6 +35,7 @@
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
     "prebuildify": "^6.0.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@electron/asar": "^3.4.1"
   }
 }

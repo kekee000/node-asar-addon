@@ -182,7 +182,17 @@ function assignFunctionName(name: any, fn: any, descriptor = kEmptyObject) {
   });
 }
 
+let realpathMapping = false;
+function setRealpathMappingEnabled(value: boolean) {
+  realpathMapping = value;
+}
+function isRealpathMappingEnabled() {
+  return realpathMapping;
+}
+
 export {
+  setRealpathMappingEnabled,
+  isRealpathMappingEnabled,
   getOptions,
   validateFunction,
   getValidatedPath,

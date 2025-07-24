@@ -16,8 +16,6 @@ asar.register({
         './node_modules.asar'
     ]
 });
-// add node_modules.asar to lookup path, enable require modules from node_modules.asar
-asar.addAsarToLookupPaths();
 
 require('./app.asar/index.js');
 ```

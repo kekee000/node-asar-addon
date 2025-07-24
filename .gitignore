@@ -6,6 +6,5 @@ lib/
 prebuilds/
 .DS_Store
 tsconfig.tsbuildinfo
-/node_modules.asar
-/node_modules.json
 package-lock.json
+test/**/*.asar

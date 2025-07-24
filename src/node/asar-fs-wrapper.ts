@@ -18,9 +18,10 @@ const binding = internalBinding('fs');
 
 import { AsarFileInfo, FileType, AsarFileStat } from '../addon';
 import {
-  validateFunction, getOptions, getValidatedPath, getDirent, validateBoolean, assignFunctionName
+  validateFunction, getOptions, getValidatedPath, getDirent, validateBoolean, assignFunctionName,
+  isRealpathMappingEnabled
 } from './internal';
-import { getOrCreateArchive, splitPath } from './archives';
+import { archives, getOrCreateArchive, splitPath } from './archives';
 
 // Convert asar archive's Stats object to fs's Stats object.
 let nextInode = 0;
@@ -315,11 +316,32 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
 
   const wrapRealpathSync = function (realpathSync: (...args: any[]) => string) {
     return function (this: any, pathArgument: string, options: any) {
-      const pathInfo = splitPath(pathArgument);
-      // @ts-ignore
-      if (!pathInfo.isAsar) return realpathSync.apply(this, arguments);
-      const { asarPath, filePath } = pathInfo;
+      let pathInfo = splitPath(pathArgument);
+      if (!pathInfo.isAsar) {
+        if (!isRealpathMappingEnabled()) {
+          return realpathSync.apply(this, [pathArgument, options]);
+        }
+        else {
+          try {
+            return realpathSync.apply(this, [pathArgument, options]);
+          }
+          catch (e) {
+            const mappingPath = archives.resolveArchiveMapping(pathArgument);
+            if (!mappingPath) {
+              throw e;
+            }
+            else {
+              pathInfo = splitPath(mappingPath) as {isAsar: true, asarPath: string, filePath: string};
+              // not an asar archive, but a directory named like an asar archive
+              if (!pathInfo.isAsar) {
+                return realpathSync.apply(this, [mappingPath, options]);
+              }
+            }
+          }
+        }
+      };
 
+      const { asarPath, filePath } = pathInfo;
       const archive = getOrCreateArchive(asarPath);
       if (!archive) {
         throw createError(AsarError.INVALID_ARCHIVE, { asarPath });
@@ -646,7 +668,6 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
   fs.readFileSync = function (pathArgument: string, options: any) {
     const pathInfo = splitPath(pathArgument);
     if (!pathInfo.isAsar) return readFileSync.apply(this, arguments);
-
     return readFileFromArchiveSync(pathInfo, options);
   };
 
@@ -671,7 +692,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
       }
 
       const dirent = getDirent(currentPath, result[0][i], type)!;
-      const stat = internalBinding('fs').internalModuleStat(binding, resultPath);
+      const stat = internalBinding('fs').internalModuleStat(resultPath);
 
       context.readdirResults.push(dirent);
       if (dirent.isDirectory() || stat === 1) {
@@ -684,7 +705,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
     for (let i = 0; i < result.length; i++) {
       const resultPath = path.join(currentPath, result[i]);
       const relativeResultPath = path.relative(context.basePath, resultPath);
-      const stat = internalBinding('fs').internalModuleStat(binding, resultPath);
+      const stat = internalBinding('fs').internalModuleStat(resultPath);
       context.readdirResults.push(relativeResultPath);
 
       if (stat === 1) {
@@ -756,7 +777,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
         if (context.withFileTypes) {
           readdirResult = [
             [...readdirResult], readdirResult.map((p: string) => {
-              return internalBinding('fs').internalModuleStat(binding, path.join(pathArg, p));
+              return internalBinding('fs').internalModuleStat(path.join(pathArg, p));
             })
           ];
         }
@@ -805,7 +826,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
       if (withFileTypes) {
         initialItem = [
           [...initialItem], initialItem.map((p: string) => {
-            return internalBinding('fs').internalModuleStat(binding, path.join(originalPath, p));
+            return internalBinding('fs').internalModuleStat(path.join(originalPath, p));
           })
         ];
       }
@@ -1084,9 +1105,9 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
   };
 
   const { internalModuleStat } = binding;
-  internalBinding('fs').internalModuleStat = (receiver: unknown, pathArgument: string) => {
+  internalBinding('fs').internalModuleStat = (pathArgument: string) => {
     const pathInfo = splitPath(pathArgument);
-    if (!pathInfo.isAsar) return internalModuleStat(receiver, pathArgument);
+    if (!pathInfo.isAsar) return internalModuleStat(pathArgument);
     const { asarPath, filePath } = pathInfo;
 
     // -ENOENT

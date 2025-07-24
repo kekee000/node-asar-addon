@@ -1,9 +1,15 @@
 import { getValidatedPath } from './internal';
-import { existsSync, statSync } from './original-fs';
+import { statSync } from './original-fs';
 import path from 'path';
 import * as asar from '../addon';
 
 export const isAsarDisabled = (): boolean => !!(process.noAsar || process.env.ELECTRON_NO_ASAR);
+
+export interface LoadArchiveOptions {
+  archives: string[];
+  throwIfNoEntry?: boolean;
+  mirrorAsarBasePath?: boolean;
+}
 
 // Cache asar archive objects.
 const cachedArchives = new Map<string, asar.ArchiveBinding>();
@@ -23,56 +29,94 @@ export const getOrCreateArchive = (archivePath: string) => {
   }
 };
 
+export const enum ArchiveType {
+  File = 1,
+  Directory = 2,
+}
 
 class AsarArchives {
-  private _archives: Map<string, number>;
-  private _lookups: Set<string>;
+  private _archives: Map<string, ArchiveType>;
+  private _mappingLookups: Map<string, string>;
+
   constructor() {
     this._archives = new Map();
-    this._lookups = new Set();
+    this._mappingLookups = new Map();
   }
 
-  private _addArchive(archivePath: string) {
-    if (existsSync(archivePath) && statSync(archivePath).isFile()) {
-      this._archives.set(archivePath, 1);
-      if (archivePath.endsWith('node_modules.asar')) {
-        this._lookups.add(archivePath.slice(0, -5));
+  private _addMappingLookup(archivePath: string) {
+    const mappingDir = archivePath.replace(/\.asar/i, '');
+    this._mappingLookups.set(mappingDir, archivePath);
+    const info = statSync(mappingDir, {throwIfNoEntry: false});
+    console.info(`[Info] AsarArchives: Asar mapping lookup added: ${
+      archivePath} -> ${mappingDir}${info ? ' (mixed dir)' : ' (mirror dir)'}`);
+  }
+
+  private _addArchive(archiveFile: string, options: {mirrorAsarBasePath: boolean, throwIfNoEntry: boolean}) {
+    const fileInfo = statSync(archiveFile, {throwIfNoEntry: false});
+    if (!fileInfo) {
+      if (options.throwIfNoEntry) {
+        throw new Error(`Asar archive not found: ${archiveFile}`);
       }
-    } else {
-      throw new Error(`Archive not found or is not a file: ${archivePath}`);
+      else {
+        console.warn(`[Warning] AsarArchives: Archive not found: ${archiveFile}`);
+      }
+    }
+    else if (fileInfo.isFile()) {
+      this._archives.set(archiveFile, ArchiveType.File);
+      if (options.mirrorAsarBasePath) {
+        this._addMappingLookup(archiveFile);
+      }
+    }
+    else if (fileInfo.isDirectory()) {
+      this._archives.set(archiveFile, ArchiveType.Directory);
+      console.warn(`[Warning] AsarArchives: ${
+        archiveFile} is a directory, asar module mapping will also being enabled.`);
+      if (options.mirrorAsarBasePath) {
+        this._addMappingLookup(archiveFile);
+      }
     }
   }
 
-  loadArchives(paths: string[]) {
+  loadArchives(options: LoadArchiveOptions) {
+    const paths = options.archives || [];
+    const throwIfNoEntry = !!options.throwIfNoEntry;
+    const mirrorAsarBasePath = options.mirrorAsarBasePath !== false;
+
     if (!Array.isArray(paths)) {
       throw new TypeError('Archives paths should be an array of strings');
     }
     for (const asarPath of paths) {
       if (asarPath.includes('*.asar')) {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require('fast-glob').sync(asarPath, { onlyFiles: true }).forEach((resolvedPath) => {
-          this._addArchive(path.resolve(resolvedPath));
+        require('fast-glob').sync(asarPath, { onlyFiles: true }).forEach((resolvedPath: string) => {
+          this._addArchive(path.resolve(resolvedPath), {throwIfNoEntry, mirrorAsarBasePath});
         });
       }
       else {
-        this._addArchive(path.resolve(asarPath));
+        this._addArchive(path.resolve(asarPath), {throwIfNoEntry, mirrorAsarBasePath});
       }
     }
   }
 
-  isArchive(archivePath: string) {
-    return this._archives.has(archivePath);
+  isArchive(archiveFile: string) {
+    if (!archiveFile.endsWith('.asar'))
+        archiveFile = archiveFile.slice(0, (archiveFile.match(/\.asar/i)?.index || archiveFile.length) + 5 );
+    return this._archives.get(archiveFile) === ArchiveType.File;
   }
 
-  isLookup(lookupPath: string) {
-    return this._lookups.has(lookupPath);
+  resolveArchiveMapping(filepath: string) {
+    for (const [lookupDir, asarFile] of this._mappingLookups) {
+      if (filepath.startsWith(lookupDir)) {
+        return asarFile + filepath.slice(lookupDir.length);
+      }
+    }
+    return null;
   }
 }
 
-const archives = new AsarArchives();
+export const archives = new AsarArchives();
 
-const asarRe = /\.asar/i;
-const asarExt = /\.asar$/i;
+export const asarRe = /\.asar(?:\/|\\|$)/i;
 
 // Separate asar package's path from full path.
 export const splitPath = (archivePathOrBuffer: string | Buffer | URL): ({
@@ -95,7 +139,7 @@ export const splitPath = (archivePathOrBuffer: string | Buffer | URL): ({
   }
   if (typeof archivePath !== 'string') return { isAsar: <const>false };
   if (!asarRe.test(archivePath)) return { isAsar: <const>false };
-  if (asarExt.test(archivePath) && !archives.isArchive(archivePath)) {
+  if (!archives.isArchive(archivePath)) {
     return { isAsar: false };
   }
   const res = asar.splitPath(path.normalize(archivePath));
@@ -104,5 +148,3 @@ export const splitPath = (archivePathOrBuffer: string | Buffer | URL): ({
   }
   return res;
 };
-
-export default archives;
