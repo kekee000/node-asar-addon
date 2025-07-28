@@ -11,7 +11,7 @@
             "preLaunchTask": "npm: build:debug",
             "program": "/Users/work/.nvm/versions/node/v20.11.1/bin/node",
             "args": [
-                "${workspaceFolder}/test/example.js",
+                "${workspaceFolder}/test/debug-addon.js",
             ],
             "cwd": "${workspaceFolder}"
         },
@@ -20,7 +20,7 @@
             "request": "launch",
             "name": "Debug Node Lib",
             "preLaunchTask": "npm: build:ts-debug",
-            "program": "${workspaceFolder}/test/mapping.js",
+            "program": "${workspaceFolder}/test/debug-addon.js",
             "cwd": "${workspaceFolder}",
         }
     ]

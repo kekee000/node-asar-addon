@@ -1,5 +1,5 @@
 const {Worker, isMainThread} = require('worker_threads');
-const {Archive} = require('../lib/addon.js');
+const {getOrCreateArchive} = require('../');
 const path = require('path');
 const asarFile = path.resolve(__dirname, 'fixtures/app.asar');
 const assert = require('assert');
@@ -8,7 +8,7 @@ function bootstrap(asarFile) {
     console.log('Using ASAR file:', asarFile);
 
     console.time(`${isMainThread ? 'main:' : 'worker'}:readArchiveHeaderSync`);
-    const archive = new Archive(asarFile);
+    const archive = getOrCreateArchive(asarFile);
     console.timeEnd(`${isMainThread ? 'main:' : 'worker'}:readArchiveHeaderSync`);
 
     const filePath = 'components/index.js';

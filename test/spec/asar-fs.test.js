@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 const path = require('path');
 const assert = require('assert');
-const {asar} = require('./node-asar-addon');
+const asar = require('./node-asar-addon');
 
 /**
  * @type {import('fs')}

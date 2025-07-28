@@ -1,18 +1,25 @@
 {
   "name": "node-asar-addon",
-  "version": "1.0.2",
-  "description": "electron asar Node.js Addons",
+  "version": "1.0.3",
+  "description": "electron asar Node Addon, asar module mappings",
   "main": "lib/index.js",
   "module": "lib/index.js",
+  "types": "./index.d.ts",
   "files": [
     "lib",
+    "index.d.ts",
     "shell",
-    "prebuilds",
     "binding.gyp",
     "!lib/**/*.map"
   ],
+  "homepage": "https://github.com/kekee000/node-asar-addon",
+  "authors": [
+    {
+      "name": "kekee000",
+      "email": "kekee000@gmail.com"
+    }
+  ],
   "scripts": {
-    "install": "echo prebuilds",
     "build": "npm run build:addon && npm run build:ts",
     "build:debug": "prebuildify --target $(node -v | sed 's/^v//') --debug",
     "build:addon": "prebuildify --target $(node -v | sed 's/^v//') --strip",
@@ -26,7 +33,8 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "node-gyp-build": "^4.8.1"
+    "node-gyp-build": "^4.8.1",
+    "node-addon-api": "^4.3.0"
   },
   "peerDependencies": {
     "fast-glob": "*"
@@ -40,7 +48,6 @@
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
     "mocha": "^11.7.1",
-    "node-addon-api": "^4.3.0",
     "prebuildify": "^6.0.1",
     "typescript": "^5.3.3"
   }

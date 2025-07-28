@@ -2,7 +2,7 @@
 const { Worker, isMainThread, parentPort } = require('node:worker_threads');
 const path = require('path');
 const assert = require('assert');
-const {asar, Archive} = require('./node-asar-addon');
+const asar = require('./node-asar-addon');
 const tmpdir = require('os').tmpdir();
 
 const archivePath = path.resolve(__dirname, '../fixtures/*.asar');
@@ -17,7 +17,7 @@ async function runTest() {
     };
 
     it('test archive', function () {
-        const archive = new Archive(archivePath);
+        const archive = asar.getOrCreateArchive(archivePath);
         assert.strictEqual(archive.archivePath, archivePath, 'Archive path should match');
         assert.ok(archive.getFdAndValidateIntegrityLater() > 0, 'File descriptor should be valid');
         assert.ok(archive.getFileInfo('package.json').size > 0, 'getFileInfo');
@@ -91,7 +91,7 @@ if (isMainThread) {
            runTest();
         });
         it('node path mapping app.asar in worker thread', (done) => {
-            const archive = new Archive(archivePath);
+            const archive = asar.getOrCreateArchive(archivePath);
             const worker = new Worker(__filename);
             worker.on('message', (result) => {
                 console.log('Worker message:', result);
@@ -108,7 +108,7 @@ if (isMainThread) {
 else {
     runTest().then(() => {
         setTimeout(() => {
-            const archive = new Archive(archivePath);
+            const archive = asar.getOrCreateArchive(archivePath);
             parentPort.postMessage({
                 archivePath: archive.archivePath,
                 fd: archive.getFdAndValidateIntegrityLater(),

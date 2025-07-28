@@ -6,9 +6,23 @@ import * as asar from '../addon';
 export const isAsarDisabled = (): boolean => !!(process.noAsar || process.env.ELECTRON_NO_ASAR);
 
 export interface LoadArchiveOptions {
-  archives: string[];
-  throwIfNoEntry?: boolean;
-  mirrorAsarBasePath?: boolean;
+    /**
+     * The paths to the asar archives to be registered.
+     * enable fast-glob to support glob patterns like `*.asar`.
+     */
+    archives: string[];
+    /**
+     * If the archive is not found, throw an error or log a warning.
+     * Default is false, which means it will write a warning log when archive is not found.
+     * @default false
+     */
+    throwIfNoEntry?: boolean;
+    /**
+     * If true, the asar module will be registered as a mirror of the original fs module.
+     * This is useful for compatibility with other modules that expect the original fs module.
+     * @default true
+     */
+    mirrorAsarBasePath?: boolean;
 }
 
 // Cache asar archive objects.
