@@ -1,4 +1,4 @@
-node-asar-addon
+@baidu/node-asar-addon
 ====
 
 The node-asar-addon module enables Node.js to ‌load modules from ASAR files‌. It supports ‌sharing ASAR archives across worker_threads‌,
@@ -51,7 +51,7 @@ require('./app.asar/index.js');
 
 ## Test
 
-> npm run build:test && npm test
+> npm test
 
 
 ## Related Projects
