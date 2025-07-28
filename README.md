@@ -1,9 +1,16 @@
 node-asar-addon
 ====
 
-The node-asar-addon module enables Node.js to ‌load modules from ASAR files‌. It supports ‌sharing ASAR archives across worker_threads‌, which can ‌reduce 50% memory usage for ASAR files in large projects.
+The node-asar-addon module enables Node.js to ‌load modules from ASAR files‌. It supports ‌sharing ASAR archives across worker_threads‌,
+enable module mappings between native filesystem and asar filesystem.
 
-This project contains ‌code partially extracted from‌ Electron's asar module, ‌with added support for‌ Node.js modules.
+This project contains ‌code partially extracted from‌ Electron's asar module.
+
+## Features
+
+- Uses C++ addon to manage asar files, supporting sharing of meta information across different worker_threads.
+- Supports module lookup path mapping, enabling smooth migration of existing module code to asar format.
+- Minimal impact on existing module loading, high speed.
 
 ## Usage
 
@@ -14,11 +21,16 @@ asar.register({
     archives: [
         './app.asar',
         './node_modules.asar'
+        // use fast-glob to get asar archives, need to install peerDependencies "fast-glob"
+        "./*.asar"
     ]
 });
 
 require('./app.asar/index.js');
 ```
+
+**Notice:** node-asar-addon only support commonjs modules, not support es modules.
+
 
 ## Requirement
 

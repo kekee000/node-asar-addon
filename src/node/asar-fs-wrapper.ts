@@ -755,7 +755,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
 
       const pathInfo = splitPath(pathArg);
       if (pathInfo.isAsar) {
-        let readdirResult;
+        let readdirResult: string[] | false | [string[], Stats[]];
         const { asarPath, filePath } = pathInfo;
 
         const archive = getOrCreateArchive(asarPath);
@@ -859,7 +859,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
 
               readdirResult = [
                 [...files], files.map((p: string) => {
-                  return internalBinding('fs').internalModuleStat(binding, path.join(direntPath, p));
+                  return internalBinding('fs').internalModuleStat(path.join(direntPath, p));
                 })
               ];
             } else {
@@ -880,7 +880,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
         const { 0: pathArg, 1: readDir } = queue.pop();
         for (const ent of readDir) {
           const direntPath = path.join(pathArg, ent);
-          const stat = internalBinding('fs').internalModuleStat(binding, direntPath);
+          const stat = internalBinding('fs').internalModuleStat(direntPath);
           result.push(path.relative(originalPath, direntPath));
 
           if (stat === 1) {
@@ -934,7 +934,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
         if (context.withFileTypes) {
           readdirResult = [
             [...readdirResult], readdirResult.map((p: string) => {
-              return internalBinding('fs').internalModuleStat(binding, path.join(pathArg, p));
+              return internalBinding('fs').internalModuleStat(path.join(pathArg, p));
             })
           ];
         }

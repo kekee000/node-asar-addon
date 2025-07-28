@@ -1,12 +1,14 @@
 {
-  "name": "@baidu/node-asar-addon",
-  "version": "0.0.1",
+  "name": "node-asar-addon",
+  "version": "1.0.2",
   "description": "electron asar Node.js Addons",
   "main": "lib/index.js",
   "module": "lib/index.js",
   "files": [
     "lib",
+    "shell",
     "prebuilds",
+    "binding.gyp",
     "!lib/**/*.map"
   ],
   "scripts": {
@@ -18,24 +20,28 @@
     "build:ts-debug": "rm -rf lib && tsc --sourceMap",
     "build:test": "sh test/build-asar.sh",
     "lint": "eslint ./src --ext .js,.ts",
-    "test": "node test/require.js"
+    "test": "npm run build:test && mocha --jobs ./test/spec/*.test.js"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "node-addon-api": "^4.3.0",
     "node-gyp-build": "^4.8.1"
   },
+  "peerDependencies": {
+    "fast-glob": "*"
+  },
   "devDependencies": {
+    "@electron/asar": "^3.4.1",
     "@stylistic/eslint-plugin": "^3.1.0",
     "@types/node": "^20.19.8",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
+    "mocha": "^11.7.1",
+    "node-addon-api": "^4.3.0",
     "prebuildify": "^6.0.1",
-    "typescript": "^5.3.3",
-    "@electron/asar": "^3.4.1"
+    "typescript": "^5.3.3"
   }
 }
