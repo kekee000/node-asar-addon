@@ -66,6 +66,10 @@ class AsarArchives {
   }
 
   private _addArchive(archiveFile: string, options: {mirrorAsarBasePath: boolean, throwIfNoEntry: boolean}) {
+    if (this._archives.has(archiveFile)) {
+      console.warn(`[Warning] AsarArchives: Archive already registered: ${archiveFile}`);
+      return;
+    }
     const fileInfo = statSync(archiveFile, {throwIfNoEntry: false});
     if (!fileInfo) {
       if (options.throwIfNoEntry) {
@@ -113,8 +117,9 @@ class AsarArchives {
   }
 
   isArchive(archiveFile: string) {
-    if (!archiveFile.endsWith('.asar'))
-        archiveFile = archiveFile.slice(0, (archiveFile.match(/\.asar/i)?.index || archiveFile.length) + 5 );
+    if (!archiveFile.endsWith('.asar')) {
+      archiveFile = archiveFile.slice(0, (archiveFile.match(/\.asar/i)?.index || archiveFile.length) + 5 );
+    }
     return this._archives.get(archiveFile) === ArchiveType.File;
   }
 

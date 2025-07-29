@@ -12,7 +12,7 @@ describe('asar archive', () => {
     before(() => {
         asar.register({
             archives: [
-                path.resolve(__dirname, '../fixtures/app.asar'),
+                path.resolve(__dirname, '../fixtures/*.asar'),
             ]
         });
         fs = require('fs');

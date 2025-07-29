@@ -13,6 +13,15 @@ describe('asar archive', () => {
     });
 
     describe('node path mapping app.asar', () => {
+        it('test archives', function () {
+            const appPath = path.resolve(__dirname, '../fixtures/app');
+            const archivePath = path.resolve(__dirname, '../fixtures/app.asar');
+            asar.archives.loadArchives({archives:[archivePath]});
+            assert.ok(asar.archives.isArchive(archivePath), 'Archive should be recognized');
+            const modulePath = asar.archives.resolveArchiveMapping(appPath + '/common/index.js');
+            assert.strictEqual(modulePath, archivePath + '/common/index.js', 'Module path should match');
+        });
+
         it('normal node_modules require', function () {
             assert.ok(require('semver').SEMVER_SPEC_VERSION, 'semver should be available');
             assert.ok(require('../fixtures/app/new-module/no-asar.js').version, 'normal module should be available');

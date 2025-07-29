@@ -5,9 +5,11 @@ const assert = require('assert');
 const asar = require('./node-asar-addon');
 const tmpdir = require('os').tmpdir();
 
-const archivePath = path.resolve(__dirname, '../fixtures/*.asar');
- asar.register({
-    archives: [archivePath]
+const appPath = path.resolve(__dirname, '../fixtures/app');
+const archivePath = path.resolve(__dirname, '../fixtures/app.asar');
+
+asar.register({
+    archives: []
 });
 
 async function runTest() {
@@ -15,6 +17,13 @@ async function runTest() {
     const it = (description, fn) => {
         tasks.push({ description, fn });
     };
+
+    it('test archives', function () {
+        asar.archives.loadArchives({archives:[archivePath]});
+        assert.ok(asar.archives.isArchive(archivePath), 'Archive should be recognized');
+        const modulePath = asar.archives.resolveArchiveMapping(appPath + '/common/index.js');
+        assert.strictEqual(modulePath, archivePath + '/common/index.js', 'Module path should match');
+    });
 
     it('test archive', function () {
         const archive = asar.getOrCreateArchive(archivePath);

@@ -65,5 +65,27 @@ export interface GetOrCreateArchive {
     (archivePath: string): ArchiveBinding;
 }
 
+type LoadArchiveOptions = RegisterOptions;
+export interface AsarArchives {
+    /**
+     * Load the asar archives with the given options.
+     * @param options
+     */
+    loadArchives(options: LoadArchiveOptions): void;
+    /**
+     * Check if the given file is an asar archive.
+     * @param archiveFile - The path to the archive file.
+     */
+    isArchive(archiveFile: string): boolean;
+    /**
+     * Resolve the archive mapping for the given file path.
+     * This is used to resolve the mapping of the asar archive to the original file path.
+     * If the file is not in an asar archive, it returns null.
+     * @param filepath - The file path to resolve.
+     */
+    resolveArchiveMapping(filepath: string): string | null;
+}
+
 export declare const register: Register;
 export declare const getOrCreateArchive: GetOrCreateArchive;
+export declare const archives: AsarArchives;

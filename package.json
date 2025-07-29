@@ -1,6 +1,6 @@
 {
   "name": "node-asar-addon",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "electron asar Node Addon, asar module mappings",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -27,7 +27,7 @@
     "build:ts-debug": "rm -rf lib && tsc --sourceMap",
     "build:test": "sh test/build-asar.sh",
     "lint": "eslint ./src --ext .js,.ts",
-    "test": "npm run build:test && mocha --jobs ./test/spec/*.test.js"
+    "test": "npm run build:test && find ./test/spec/*.test.js | xargs -n1 mocha"
   },
   "engines": {
     "node": ">=20.0.0"
