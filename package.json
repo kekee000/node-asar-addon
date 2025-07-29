@@ -1,6 +1,6 @@
 {
   "name": "node-asar-addon",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "electron asar Node Addon, asar module mappings",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -21,8 +21,8 @@
   ],
   "scripts": {
     "build": "npm run build:addon && npm run build:ts",
-    "build:debug": "prebuildify --target $(node -v | sed 's/^v//') --debug",
-    "build:addon": "prebuildify --target $(node -v | sed 's/^v//') --strip",
+    "build:debug": "prebuildify--napi --target $(node -v | sed 's/^v//') --debug",
+    "build:addon": "prebuildify --napi --target $(node -v | sed 's/^v//') --strip",
     "build:ts": "rm -rf lib && tsc",
     "build:ts-debug": "rm -rf lib && tsc --sourceMap",
     "build:test": "sh test/build-asar.sh",
