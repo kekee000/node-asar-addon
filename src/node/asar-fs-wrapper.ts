@@ -339,7 +339,7 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
             }
           }
         }
-      };
+      }
 
       const { asarPath, filePath } = pathInfo;
       const archive = getOrCreateArchive(asarPath);
@@ -349,7 +349,13 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
 
       const fileRealPath = archive.realpath(filePath);
       if (fileRealPath === false) {
-        throw createError(AsarError.NOT_FOUND, { asarPath, filePath });
+        if (!isRealpathMappingEnabled()) {
+          throw createError(AsarError.NOT_FOUND, { asarPath, filePath });
+        }
+        // If the file is not found, try to return the original realpath
+        else {
+          return realpathSync.apply(this, [pathArgument.replace(/\.asar(?=\/|\\)/i, ''), options]);
+        }
       }
 
       return path.join(realpathSync(asarPath, options), fileRealPath);

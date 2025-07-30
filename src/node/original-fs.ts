@@ -1,6 +1,1 @@
-import { existsSync, readFileSync, statSync } from 'fs';
-export {
-    existsSync,
-    readFileSync,
-    statSync,
-};
+export { existsSync, readFileSync, readdirSync, statSync } from 'fs';

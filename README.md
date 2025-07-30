@@ -19,14 +19,19 @@ const asar = require('node-asar-addon');
 // register asar files
 asar.register({
     archives: [
+        // mapping /app.asar/xxx => /app/xxx
         './app.asar',
-        './node_modules.asar'
         // use fast-glob to get asar archives, need to install peerDependencies "fast-glob"
-        "./*.asar"
+        './*.asar',
     ]
 });
 
-require('./app.asar/index.js');
+// require module in asar
+const indexAsar = require('./app.asar/index.js');
+// require module in asar through module mapping
+const index = require('./app/index.js');
+// console.log(indexAsar === index)
+// result: true
 ```
 
 **Notice:** node-asar-addon only support commonjs modules, not support es modules.

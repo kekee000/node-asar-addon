@@ -46,6 +46,24 @@ describe('asar archive', () => {
             assert.ok(test.name(), 'require asar archive pkg app.asar/pkg');
         });
 
+        it('require module out asar', function () {
+            const test = require('../fixtures/app.asar/require-modules-out-asar.js');
+            assert.ok(test.moduleOutAsar === 'module-out-asar', 'require module out asar');
+        });
+
+        it('app.asar/ => app/ module mapping equals', function () {
+            assert.ok(require('../fixtures/app/dep.js'), 'asar module mapping should be available');
+            assert.ok(require('../fixtures/app.asar/dep.js'), 'asar module mapping should be available');
+            assert.ok(require('../fixtures/app/dep.js') === require('../fixtures/app.asar/dep.js'), 'asar module mapping equals');
+        });
+
+        it('app/ => app.asar/ module mapping equals', function () {
+            assert.ok(require('../fixtures/app/node_modules/is-absolute'), 'asar module mapping should be available');
+            assert.ok(require('../fixtures/app.asar/require-modules-out-asar.js'), 'asar module mapping should be available');
+            assert.ok(require('../fixtures/app/node_modules/is-absolute') === require('../fixtures/app.asar/require-modules-out-asar.js').isAbsolute, 'asar module mapping equals');
+            assert.ok(require('../fixtures/app/module-out-asar') === require('../fixtures/app.asar/require-modules-out-asar.js').moduleOutAsar, 'asar module mapping equals');
+        });
+
         it('require pkg in asar with mapping', function () {
             const test = require('../fixtures/app/pkg');
             assert.ok(test.name(), 'require asar archive pkg app.asar/pkg');
