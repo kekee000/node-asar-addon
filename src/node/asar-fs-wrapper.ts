@@ -1158,19 +1158,6 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
     };
   }
 
-  function invokeWithNoAsar(func: (...args: any[]) => any) {
-    return function (this: any) {
-      const processNoAsarOriginalValue = process.noAsar;
-      process.noAsar = true;
-      try {
-        // @ts-ignore
-        return func.apply(this, arguments);
-      } finally {
-        process.noAsar = processNoAsarOriginalValue;
-      }
-    };
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Module = require('module') as NodeJS.ModuleInternal;
   // Strictly implementing the flags of fs.copyFile is hard, just do a simple
@@ -1184,46 +1171,5 @@ export const wrapFsWithAsar = (fs: Record<string, any>) => {
   overrideAPISync(Module._extensions, '.node', 1);
   overrideAPISync(fs, 'openSync');
 
-  const overrideChildProcess = (childProcess: Record<string, any>) => {
-    // Executing a command string containing a path to an asar archive
-    // confuses `childProcess.execFile`, which is internally called by
-    // `childProcess.{exec,execSync}`, causing Electron to consider the full
-    // command as a single path to an archive.
-    const { exec, execSync } = childProcess;
-    childProcess.exec = invokeWithNoAsar(exec);
-    childProcess.exec[util.promisify.custom] = assignFunctionName('exec',
-      invokeWithNoAsar(exec[util.promisify.custom]));
-    childProcess.execSync = invokeWithNoAsar(execSync);
-
-    overrideAPI(childProcess, 'execFile');
-    overrideAPISync(childProcess, 'execFileSync');
-  };
-
-  const asarReady = new WeakSet();
-
-  // Lazily override the child_process APIs only when child_process is
-  // fetched the first time.  We will eagerly override the child_process APIs
-  // when this env var is set so that stack traces generated inside node unit
-  // tests will match. This env var will only slow things down in users apps
-  // and should not be used.
-  if (process.env.ELECTRON_EAGER_ASAR_HOOK_FOR_TESTING) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    overrideChildProcess(require('child_process'));
-  } else {
-    const originalModuleLoad = Module._load;
-    Module._load = (request: string, ...args: any[]) => {
-      const loadResult = originalModuleLoad(request, ...args);
-      if (request === 'child_process' || request === 'node:child_process') {
-        if (!asarReady.has(loadResult)) {
-          asarReady.add(loadResult);
-          // Just to make it obvious what we are dealing with here
-          const childProcess = loadResult;
-
-          overrideChildProcess(childProcess);
-        }
-      }
-      return loadResult;
-    };
-  }
   return fs;
 };
