@@ -93,7 +93,7 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
 
   const statCache: Map<string, number> = new Map();
   const asarStat = function stat(filename: string) {
-    filename = path.toNamespacedPath(filename);
+    filename = toNamespacedPath(filename);
     if (statCache !== null) {
       const result = statCache.get(filename);
       if (result !== undefined) { return result }

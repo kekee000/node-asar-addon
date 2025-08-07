@@ -41,6 +41,7 @@ const index = require('./app/index.js');
 
 - Node >= 20.0
 - Compiled with C++17
+- Tested on darwin, linux platform
 
 ## Build
 

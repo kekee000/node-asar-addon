@@ -89,6 +89,7 @@ describe('asar archive', () => {
             assert.ok(pkgFiles.includes('lib.js'), 'readdirSync should return the lib.js file');
             // recrusive
             const allFiles = fs.readdirSync(path.resolve(fixturesDir, 'asar-source/app/node_modules/express'), { recursive: true });
+            assert.ok(allFiles.includes('index.js'), 'readdir should return files');
             assert.ok(allFiles.includes('lib/express.js'), 'readdirSync should return files in subdirectories');
         });
         it('readdir dir', function (done) {
@@ -100,6 +101,7 @@ describe('asar archive', () => {
             // recrusive
             fs.readdir(path.resolve(fixturesDir, 'asar-source/app/node_modules/express'), { recursive: true }, (err, allFiles) => {
                 assert.ifError(err);
+                assert.ok(allFiles.includes('index.js'), 'readdir should return files');
                 assert.ok(allFiles.includes('lib/express.js'), 'readdir should return files in subdirectories');
             });
         });
@@ -110,6 +112,7 @@ describe('asar archive', () => {
             assert.ok(pkgFiles.includes('lib.js'), 'promises.readdir should return the lib.js file');
             // recrusive
             const allFiles = await fs.promises.readdir(path.resolve(fixturesDir, 'asar-source/app/node_modules/express'), { recursive: true });
+            assert.ok(allFiles.includes('index.js'), 'readdir should return files');
             assert.ok(allFiles.includes('lib/express.js'), 'promises.readdir should return files in subdirectories');
         });
 
@@ -285,6 +288,7 @@ describe('asar archive', () => {
             assert.ok(pkgFiles.includes('lib.js'), 'readdirSync should return the lib.js file');
             // recrusive
             const allFiles = fs.readdirSync(path.resolve(fixturesDir, 'app.asar/node_modules/express'), { recursive: true });
+            assert.ok(allFiles.includes('index.js'), 'readdir should return files');
             assert.ok(allFiles.includes('lib/express.js'), 'readdirSync should return files in subdirectories');
         });
         it('readdir', function (done) {
@@ -296,6 +300,7 @@ describe('asar archive', () => {
             // recrusive
             fs.readdir(path.resolve(fixturesDir, 'app.asar/node_modules/express'), { recursive: true }, (err, allFiles) => {
                 assert.ifError(err);
+                assert.ok(allFiles.includes('index.js'), 'readdir should return files');
                 assert.ok(allFiles.includes('lib/express.js'), 'readdir should return files in subdirectories');
             });
         });
@@ -313,6 +318,7 @@ describe('asar archive', () => {
             assert.ok(pkgFiles.includes('lib.js'), 'promises.readdir should return the lib.js file');
             // recrusive
             const allFiles = await fs.promises.readdir(path.resolve(fixturesDir, 'app.asar/node_modules/express'), { recursive: true });
+            assert.ok(allFiles.includes('index.js'), 'readdir should return files');
             assert.ok(allFiles.includes('lib/express.js'), 'promises.readdir should return files in subdirectories');
         });
 
