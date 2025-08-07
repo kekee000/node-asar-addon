@@ -1,9 +1,8 @@
 /**
  * modified from https://github.com/toyobayashi/asar-node
  */
-import { isAsarDisabled, archives, asarRe } from './archives';
+import { archives, asarRe } from './archives';
 import path from 'path';
-const toNamespacedPath = path.toNamespacedPath;
 import { setRealpathMappingEnabled } from './internal';
 
 function getOptionValue(optionName: string) {
@@ -14,7 +13,9 @@ const preserveSymbolLinks = getOptionValue('--preserve-symlinks');
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typeof import('fs')) {
-  const internalModuleReadJSON = (filename: string) => {
+  const isAsarDisabled = archives._isAsarDisabled;
+
+  const readJsonFile = (filename: string) => {
     if (!asarFS.existsSync(filename)) return [];
     let str: string;
     try {
@@ -26,15 +27,14 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
     return [str, str.length > 0];
   };
 
-  const pkgJsonCache = new Map();
   const jsonReaderCache = new Map();
   const packageJsonReader = {
     read(jsonPath: string) {
       if (jsonReaderCache.has(jsonPath)) {
         return jsonReaderCache.get(jsonPath);
       }
-      const { 0: string, 1: containsKeys } = internalModuleReadJSON(
-        toNamespacedPath(jsonPath)
+      const { 0: string, 1: containsKeys } = readJsonFile(
+        path.toNamespacedPath(jsonPath)
       );
       const result = { string, containsKeys };
       jsonReaderCache.set(jsonPath, result);
@@ -42,6 +42,7 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
     }
   };
 
+  const pkgJsonCache = new Map();
   const readPackage = (requestPath: string) => {
     const jsonPath = path.resolve(requestPath, 'package.json');
     const existing = pkgJsonCache.get(jsonPath);
@@ -80,8 +81,8 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
     if (asarRe.test(pkgPath)) {
       return readPackage(pkgPath);
     }
-    const pkg =  nativeReadPackage.call(this, pkgPath);
-    if (pkg.exists || isAsarDisabled()) {
+    const pkg = nativeReadPackage.call(this, pkgPath);
+    if (pkg.exists || isAsarDisabled) {
       return pkg;
     }
     const resolvedPath = archives.resolveArchiveMapping(pkgPath);
@@ -93,7 +94,7 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
 
   const statCache: Map<string, number> = new Map();
   const asarStat = function stat(filename: string) {
-    filename = toNamespacedPath(filename);
+    filename = path.toNamespacedPath(filename);
     if (statCache !== null) {
       const result = statCache.get(filename);
       if (result !== undefined) { return result }
@@ -109,7 +110,7 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
   const nativeStat = Module._stat;
   // stat mapping app/index.js => app.asar/index.js
   Module._stat = function (filename: string): number {
-    if (isAsarDisabled()) {
+    if (isAsarDisabled) {
       return nativeStat.call(this, filename);
     }
     if (asarRe.test(filename)) {
@@ -133,7 +134,7 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
 
   const nativeFindPath = Module._findPath;
   Module._findPath = function (request: string, paths: string[], isMain?: boolean): string | false {
-    if (isAsarDisabled()) {
+    if (isAsarDisabled) {
       return nativeFindPath.call(this, request, paths, isMain);
     }
 

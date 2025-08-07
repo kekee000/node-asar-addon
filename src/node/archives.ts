@@ -3,8 +3,6 @@ import { statSync } from './original-fs';
 import path from 'path';
 import * as asar from '../addon';
 
-export const isAsarDisabled = (): boolean => !!(process.noAsar || process.env.ELECTRON_NO_ASAR);
-
 export interface LoadArchiveOptions {
     /**
      * The paths to the asar archives to be registered.
@@ -51,6 +49,7 @@ export const enum ArchiveType {
 class AsarArchives {
   private _archives: Map<string, ArchiveType>;
   private _mappingLookups: Map<string, string>;
+  _isAsarDisabled = false;
 
   constructor() {
     this._archives = new Map();
@@ -123,7 +122,8 @@ class AsarArchives {
     return this._archives.get(archiveFile) === ArchiveType.File;
   }
 
-  resolveArchiveMapping(filepath: string) {
+  resolveArchiveMapping(filepath: string): string | null {
+    if (!this._mappingLookups.size) return null;
     for (const [lookupDir, asarFile] of this._mappingLookups) {
       if (filepath.startsWith(lookupDir)) {
         return asarFile + filepath.slice(lookupDir.length);
@@ -146,21 +146,25 @@ export const splitPath = (archivePathOrBuffer: string | Buffer | URL): ({
   filePath: string;
 }) => {
   // Shortcut for disabled asar.
-  if (isAsarDisabled()) return { isAsar: false };
+  if (archives._isAsarDisabled) return { isAsar: false };
 
   // Check for a bad argument type.
   let archivePath = archivePathOrBuffer;
   if (Buffer.isBuffer(archivePathOrBuffer)) {
     archivePath = archivePathOrBuffer.toString();
   }
-  if (archivePath instanceof URL) {
+  else if (archivePath instanceof URL) {
     archivePath = getValidatedPath(archivePath);
   }
+
   if (typeof archivePath !== 'string') return { isAsar: <const>false };
+
   if (!asarRe.test(archivePath)) return { isAsar: <const>false };
+
   if (!archives.isArchive(archivePath)) {
     return { isAsar: false };
   }
+
   const res = asar.splitPath(path.normalize(archivePath));
   if (false === res) {
     throw new Error(`Invalid asar archive path: ${archivePath}`);
