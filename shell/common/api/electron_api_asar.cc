@@ -20,8 +20,6 @@ namespace fs = std::filesystem;
 class ArchiveWrapper : public Napi::ObjectWrap<ArchiveWrapper> {
 public:
     static Napi::Object Init(Napi::Env env, Napi::Object exports) {
-        Napi::HandleScope scope(env);
-
         Napi::Function func = DefineClass(env, "Archive", {
             InstanceMethod("getFileInfo", &ArchiveWrapper::GetFileInfo),
             InstanceMethod("stat", &ArchiveWrapper::Stat),
