@@ -1,4 +1,5 @@
 import assert from "assert";
+import type {Stats} from "fs";
 import {join} from "path";
 
 let fs: typeof import('fs');
@@ -26,7 +27,7 @@ class Dirent {
   name: string;
   parentPath: string;
   path: string;
-  constructor(name, type, path) {
+  constructor(name: string, type: number | null, path: string) {
     this.name = name;
     this.parentPath = path;
     this.path = path;
@@ -63,7 +64,7 @@ class Dirent {
 }
 
 class DirentFromStats extends Dirent {
-  constructor(name, stats, path) {
+  constructor(name: string, stats: Stats, path: string) {
     super(name, null, path);
     this[kStats] = stats;
   }
@@ -122,10 +123,10 @@ function getValidatedPath(path: string | Buffer | URL): string {
   if (typeof path === 'string') {
     return path;
   }
-  if (Buffer.isBuffer(path)) {
+  else if ('Uint8Array' === path[Symbol.toStringTag]) {
     return path.toString();
   }
-  if (path instanceof URL) {
+  else if (path instanceof URL) {
     if (path.protocol !== 'file:') {
       throw new Error('URL protocol must be file:');
     }
