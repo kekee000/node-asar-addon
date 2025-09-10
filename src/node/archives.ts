@@ -150,14 +150,16 @@ export const splitPath = (archivePathOrBuffer: string | Buffer | URL): ({
 
   // Check for a bad argument type.
   let archivePath = archivePathOrBuffer;
-  if ('Uint8Array' === archivePathOrBuffer[Symbol.toStringTag]) {
-    archivePath = archivePathOrBuffer.toString();
-  }
-  else if (archivePath instanceof URL) {
-    archivePath = getValidatedPath(archivePath);
-  }
-  else if (typeof archivePath !== 'string') {
-    return { isAsar: <const>false };
+  if (typeof archivePath !== 'string') {
+    if ('Uint8Array' === archivePathOrBuffer[Symbol.toStringTag]) {
+      archivePath = archivePathOrBuffer.toString();
+    }
+    else if (archivePath instanceof URL) {
+      archivePath = getValidatedPath(archivePath);
+    }
+    else  {
+      return { isAsar: <const>false };
+    }
   }
 
   if (!asarRe.test(archivePath)) return { isAsar: <const>false };
