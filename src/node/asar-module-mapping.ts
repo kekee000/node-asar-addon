@@ -95,16 +95,15 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
   const statCache: Map<string, number> = new Map();
   const asarStat = function stat(filename: string) {
     filename = path.toNamespacedPath(filename);
-    if (statCache !== null) {
-      const result = statCache.get(filename);
-      if (result !== undefined) { return result }
-    }
-    const result = process.binding('fs').internalModuleStat(filename);
-    if (statCache !== null && result >= 0) {
+    const result = statCache.get(filename);
+    if (result !== undefined) { return result }
+
+    const newResult = process.binding('fs').internalModuleStat(filename);
+    if (newResult >= 0) {
       // Only set cache when `internalModuleStat(filename)` succeeds.
-      statCache.set(filename, result);
+      statCache.set(filename, newResult);
     }
-    return result;
+    return newResult;
   };
 
   const nativeStat = Module._stat;
@@ -116,16 +115,16 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
     if (asarRe.test(filename)) {
       const result = asarStat.call(this, filename);
       if (result < 0) {
-        return nativeStat.call(this, filename.replace(/\.asar(?=\/|\\)/i, ''));
+        return asarStat(filename.replace(/\.asar(?=\/|\\)/i, ''));
       }
       return result;
     }
     else {
-      const result = nativeStat.call(this, filename);
+      const result = asarStat(filename);
       if (result < 0) {
         const resolvedPath = archives.resolveArchiveMapping(filename);
         if (resolvedPath) {
-          return asarStat.call(this, resolvedPath);
+          return asarStat(resolvedPath);
         }
       }
       return result;
@@ -153,21 +152,23 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
       }
     }
 
-    // asar mapping app/index.js => app.asar/index.js
-    // if file in native file, return it directly, in asar file return the asar file path
     if (filename) {
-      // app/index.js is exists
-      if (nativeStat(filename) >= 0) {
+      // file exists in native file system, asar files or native files
+      if (statCache.has(filename)) {
         return filename;
       }
-      // app.asar/index.js require native node_modules
-      if (asarRe.test(filename)) {
-        return asarStat(filename) < 0 ? filename.replace(/\.asar(?=\/|\\)/i, '') : filename;
-      }
-      // app/index.js require asar node_modules
-      const resolvedPath = archives.resolveArchiveMapping(filename);
-      if (resolvedPath) {
-        return resolvedPath;
+      else {
+        // app.asar/index.js requires app/xxx.js
+        if (asarRe.test(filename)) {
+          return filename.replace(/\.asar(?=\/|\\)/i, '');
+        }
+        // app/index.js requires app.asar/xxx.js
+        else {
+          const resolvedPath = archives.resolveArchiveMapping(filename);
+          if (resolvedPath) {
+            return resolvedPath;
+          }
+        }
       }
     }
     return filename;
