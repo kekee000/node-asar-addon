@@ -1,6 +1,6 @@
 {
   "name": "node-asar-addon",
-  "version": "1.0.12",
+  "version": "1.1.0",
   "description": "electron asar Node Addon, asar module mappings",
   "main": "lib/index.js",
   "module": "lib/index.js",

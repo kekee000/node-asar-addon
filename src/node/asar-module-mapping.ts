@@ -75,21 +75,27 @@ export function wrapModuleAsarMapping(Module: NodeJS.ModuleInternal, asarFS: typ
     }
   };
 
-
   const nativeReadPackage = Module._readPackage;
   Module._readPackage = function (pkgPath: string) {
+    // require app.asar/package.json equals to app/package.json
     if (asarRe.test(pkgPath)) {
-      return readPackage(pkgPath);
+      const pkg = readPackage(pkgPath);
+      if (pkg.exists || isAsarDisabled) {
+        return pkg;
+      }
+      return nativeReadPackage.call(this, pkgPath.replace(/\.asar(?=\/|\\)/i, ''));
     }
-    const pkg = nativeReadPackage.call(this, pkgPath);
-    if (pkg.exists || isAsarDisabled) {
+    else {
+      const pkg = nativeReadPackage.call(this, pkgPath);
+      if (pkg.exists || isAsarDisabled) {
+        return pkg;
+      }
+      const resolvedPath = archives.resolveArchiveMapping(pkgPath);
+      if (resolvedPath) {
+        return readPackage(resolvedPath);
+      }
       return pkg;
     }
-    const resolvedPath = archives.resolveArchiveMapping(pkgPath);
-    if (resolvedPath) {
-      return readPackage(resolvedPath);
-    }
-    return pkg;
   };
 
   const statCache: Map<string, number> = new Map();
